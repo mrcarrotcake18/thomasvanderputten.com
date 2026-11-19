@@ -45,15 +45,17 @@ body { font-family: var(--font); overflow-x: hidden; }
 @media (prefers-reduced-motion: reduce) { .strip { animation-play-state: paused; } }
 
 /* ---- Columns: nav column 608pt wide, content starts at y = 278.86pt ---- */
+/* Desktop: the page itself never scrolls. Band and menu stay put; only the content column scrolls. */
+@media (min-width: 761px) { html, body { height: 100%; overflow: hidden; } }
+.stage { height: 100vh; height: 100dvh; }
 .cols {
+  position: absolute; top: calc(278.86 * var(--u)); left: 0; right: 0; bottom: 0;
   display: grid;
   grid-template-columns: calc(608 * var(--u)) minmax(0, 1fr);
-  padding-top: calc(278.86 * var(--u));
-  min-height: calc(1080 * var(--u));
 }
 
 nav {
-  position: sticky; top: 0; align-self: start;
+  position: relative; z-index: 2;
   padding-top: calc(72.6859 * var(--u));
   padding-left: calc(60 * var(--u));
 }
@@ -82,9 +84,13 @@ nav canvas.fx { position: absolute; left: 0; top: 0; pointer-events: none; image
 a:focus-visible, button:focus-visible { outline: 2px solid var(--lilac); outline-offset: 3px; }
 
 /* ---- Views ---- */
-main { min-width: 0; }
-.hero { width: calc(1312 * var(--u)); height: calc(801.14 * var(--u)); overflow: hidden; }
-.hero img { display: block; max-width: none; width: calc(1313.15 * var(--u)); height: calc(802.17 * var(--u)); }
+main { min-width: 0; grid-column: 2; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+main > [data-view="home"] { height: 100%; }
+/* Front page: the image fills the whole area right of the menu and below the bar; a random work on each load */
+.hero { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; background: #000; cursor: pointer; }
+.hero img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: center; transition: opacity 1.4s ease; }
+.hero img.off { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .hero img { transition: none; } }
 
 .panel {
   padding: calc(72.6859 * var(--u) + 2px) calc(60 * var(--u)) calc(156 * var(--u));
@@ -142,13 +148,15 @@ main { min-width: 0; }
 /* ---- Phone / narrow: band stays to scale, nav and content reflow ---- */
 @container (max-width: 760px) {
   .stage { --nu: 1px; --fs: 17px; }
-  .cols { grid-template-columns: minmax(0, 1fr); padding-top: calc(290 * var(--u)); min-height: 0; }
+  .stage { height: auto; }
+  .cols { position: static; grid-template-columns: minmax(0, 1fr); padding-top: calc(290 * var(--u)); }
+  main { grid-column: 1; height: auto; overflow: visible; }
+  main > [data-view="home"] { height: auto; }
   nav {
     position: static;
     padding: 20px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
   }
-  .hero { width: 100%; height: auto; }
-  .hero img { width: 100%; height: auto; }
+  .hero { height: auto; aspect-ratio: 1312 / 801; }
   .panel { padding: 16px max(16px, env(safe-area-inset-right, 0px)) 64px max(16px, env(safe-area-inset-left, 0px)); }
   .shots { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .cv li { grid-template-columns: 5em minmax(0, 1fr); gap: 0 .8em; }
@@ -175,9 +183,10 @@ main { min-width: 0; }
 <main id="main">
 
 <section data-view="home" aria-label="Home">
-  <div class="hero">
+  <a class="hero" href="#works" data-work="theorem-of-things-321" aria-label="See this work">
     <img src="img/hero.jpg" width="2626" height="1604" alt="Theorem of Things 321, 2026: a glass vitrine misted with condensation, a purple-and-yellow checkerboard canvas behind the glass and river pebbles on the floor of the case.">
-  </div>
+    <img class="off" alt="" aria-hidden="true">
+  </a>
 </section>
 
 <section data-view="info" class="panel" hidden>
@@ -233,19 +242,19 @@ main { min-width: 0; }
   <article class="work" id="crunching-numbers">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Crunching Numbers, 2024</span><span class="m">Low-poly bunny, Arduino Uno, segment display, cables</span><span class="m">Dimensions variable</span></p>
     <p>A white 3D-printed bunny that looks like it walked straight out of a video game. On its back, a counter slowly counts down to zero, then resets and starts again. I’m interested in how a small sculptural change can give an everyday object an entirely new story. Here, a cute ornament becomes a timer for something that never arrives. A way out of our boring reality, maybe. The making of sculptures is a way to alter the fabricated narratives of our surroundings.</p>
-    <div class="shots"><figure class="wide"><img loading="lazy" src="img/crunching-numbers.jpg" width="1800" height="1126" alt="A white low-poly bunny with a red segment display, cables trailing across the floor."></figure></div>
+    <div class="shots"><figure class="wide"><img loading="lazy" src="img/crunching-numbers.jpg" width="1800" height="1200" alt="A white low-poly bunny with a red segment display, cables trailing across the floor."></figure></div>
   </article>
 
   <article class="work" id="theory-of-things-304">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Theory of Things no. 304, 2026</span><span class="m">MDF, white powder, mini dice, AirPod, ping-pong ball, plushy baby, <em>Orange</em> by Jill van Grinsven, tiger photoprint</span><span class="m">Dimensions variable</span></p>
     
-    <div class="shots"><figure class="wide"><img loading="lazy" src="img/tot304-shelf.jpg" width="1800" height="1128" alt="A long grey shelf with a mandarin, a small figure, a red plush and a red frame with an orange image."></figure><figure class="wide"><img loading="lazy" src="img/tot304-detail.jpg" width="1800" height="1127" alt="Close-up: a small heap of white powder and a red die on the grey shelf."></figure></div>
+    <div class="shots"><figure class="wide"><img loading="lazy" src="img/tot304-shelf.jpg" width="1800" height="1350" alt="A long grey shelf with a mandarin, a small figure, a red plush and a red frame with an orange image."></figure><figure class="wide"><img loading="lazy" src="img/tot304-detail.jpg" width="1800" height="1350" alt="Close-up: a small heap of white powder and a red die on the grey shelf."></figure></div>
   </article>
 
   <article class="work" id="roadside-picnic">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Roadside Picnic, 2026</span><span class="m">Orange bag, blue paper tape, plastic bottles, yellow mesh, wooden stand, acrylic, water, radio</span><span class="m">Dimensions variable</span></p>
     <p>It started with an orange bag I’d had for a while. I let myself fantasise about what it could be, and started writing a sci-fi story around it. The story asked for things the bag didn’t have yet, so I built them, like a wooden stand and plastic bottles with blue tape. Then the sculpture changed the story again. Fantasising here isn’t a way of escaping the object, but of looking at it for longer. What’s left is a prop from a story the next spectator would only half know.</p>
-    <div class="shots"><figure><img loading="lazy" src="img/roadside-stand.jpg" width="1441" height="1800" alt="A wooden stand under a slanted attic window, an orange bag in yellow mesh hanging from it."></figure><figure><img loading="lazy" src="img/roadside-bag.jpg" width="1433" height="1800" alt="Close-up: the orange bag in yellow mesh with a white power strip and cables."></figure><figure><img loading="lazy" src="img/roadside-bottles.jpg" width="1436" height="1800" alt="Two plastic bottles wrapped in blue tape hanging from the stand."></figure><figure><img loading="lazy" src="img/roadside-detail.jpg" width="1800" height="1134" alt="Close-up of the bag with a radio and headphones."></figure></div>
+    <div class="shots"><figure><img loading="lazy" src="img/roadside-stand.jpg" width="1192" height="1800" alt="A wooden stand under a slanted attic window, an orange bag in yellow mesh hanging from it."></figure><figure><img loading="lazy" src="img/roadside-bag.jpg" width="1433" height="1800" alt="Close-up: the orange bag in yellow mesh with a white power strip and cables."></figure><figure><img loading="lazy" src="img/roadside-bottles.jpg" width="1192" height="1800" alt="Two plastic bottles wrapped in blue tape hanging from the stand."></figure><figure><img loading="lazy" src="img/roadside-detail.jpg" width="1800" height="1134" alt="Close-up of the bag with a radio and headphones."></figure></div>
   </article>
 
   <article class="work" id="theorem-of-things-321">
@@ -263,25 +272,25 @@ main { min-width: 0; }
   <article class="work" id="despicable-me-2">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Despicable me 2, 2026</span><span class="m">MDF, printed wallpaper</span><span class="m">Dimensions variable</span></p>
     
-    <div class="shots"><figure class="wide"><img loading="lazy" src="img/despicable-me-2.jpg" width="1800" height="1126" alt="A wallpapered MDF panel leaning against a wall with wallpapered strips on the floor."></figure></div>
+    <div class="shots"><figure class="wide"><img loading="lazy" src="img/despicable-me-2.jpg" width="1800" height="1200" alt="A wallpapered MDF panel leaning against a wall with wallpapered strips on the floor."></figure></div>
   </article>
 
   <article class="work" id="untitled-canvas-48">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Untitled, 2026</span><span class="m">Canvas, wallpaper glue, brown pigment</span><span class="m">75 × 48 cm</span></p>
     
-    <div class="shots"><figure><img loading="lazy" src="img/untitled-gold.jpg" width="1436" height="1800" alt="A pale canvas with a vertical brown-gold splash."></figure></div>
+    <div class="shots"><figure><img loading="lazy" src="img/untitled-gold.jpg" width="1201" height="1800" alt="A pale canvas with a vertical brown-gold splash."></figure></div>
   </article>
 
   <article class="work" id="untitled-canvas-75">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Untitled, 2026</span><span class="m">Canvas, wallpaper glue, brown pigment</span><span class="m">75 × 75 cm</span></p>
     
-    <div class="shots"><figure><img loading="lazy" src="img/untitled-blue.jpg" width="1800" height="1131" alt="A square canvas covered in blue brushstrokes."></figure></div>
+    <div class="shots"><figure><img loading="lazy" src="img/untitled-blue.jpg" width="1800" height="1200" alt="A square canvas covered in blue brushstrokes."></figure></div>
   </article>
 
   <article class="work" id="untitled-fan">
     <p class="cap"><span>Thomas van der Putten</span><span class="t">Untitled, 2026</span><span class="m">MDF, fan, pebbles, drawing, light bulb</span><span class="m">300 × 100 × 50 cm</span></p>
     
-    <div class="shots"><figure class="wide"><img loading="lazy" src="img/untitled-panel.jpg" width="1800" height="1128" alt="A tall dark panel on a wheeled stand with a round fan set into it."></figure><figure><img loading="lazy" src="img/untitled-back.jpg" width="1436" height="1800" alt="The back of the panel: raw MDF with a light bulb and wooden battens."></figure><figure><img loading="lazy" src="img/untitled-drawing.jpg" width="1435" height="1800" alt="A cut-out speech-bubble drawing above a row of pebbles on a ledge."></figure></div>
+    <div class="shots"><figure class="wide"><img loading="lazy" src="img/untitled-panel.jpg" width="1800" height="1200" alt="A tall dark panel on a wheeled stand with a round fan set into it."></figure><figure><img loading="lazy" src="img/untitled-back.jpg" width="1200" height="1800" alt="The back of the panel: raw MDF with a light bulb and wooden battens."></figure><figure><img loading="lazy" src="img/untitled-drawing.jpg" width="1435" height="1800" alt="A cut-out speech-bubble drawing above a row of pebbles on a ledge."></figure></div>
   </article>
 </section>
 
@@ -326,7 +335,7 @@ main { min-width: 0; }
       if (a.getAttribute('data-view') === v) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    if (h && names.indexOf(h) > -1) window.scrollTo(0, 0);
+    if (h && names.indexOf(h) > -1) { document.getElementById('main').scrollTop = 0; window.scrollTo(0, 0); }
   }
   window.addEventListener('hashchange', show);
   show();
@@ -405,11 +414,15 @@ main { min-width: 0; }
 
   function rebuildDepth() {
     depth = {};
-    deposits.forEach(function (d) { var k = Math.floor(d.x / BSU); depth[k] = Math.max(depth[k] || 0, d.y + d.size); });
+    deposits.forEach(function (d) { var k = Math.round(d.x / BSU); depth[k] = Math.max(depth[k] || 0, d.y + d.size); });
   }
+  // Snap every block to whole device pixels: neighbours share exact edges, so no hairline gaps or holes.
+  // The first row reaches 4pt up under the 18pt rule, so it always closes against the bar.
   function drawDeposit(d, s, dpr) {
-    var top = ceilU(d.x) + d.y;
-    sctx.fillRect(d.x * s * dpr, (top - (d.y === 0 ? 1.2 : 0.3)) * s * dpr, Math.ceil(d.size * s * dpr), Math.ceil((d.size + (d.y === 0 ? 1.2 : 0.3)) * s * dpr));
+    var k = s * dpr, top = ceilU(d.x) + d.y;
+    var x0 = Math.round(d.x * k), x1 = Math.round((d.x + d.size) * k);
+    var y0 = Math.round((top - (d.y === 0 ? 4 : 0)) * k), y1 = Math.round((top + d.size) * k);
+    sctx.fillRect(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0));
   }
   function sizeSoot() {
     var s = sc(), dpr = dprNow(), h = (287 + MAXU + 30) * s;
@@ -511,8 +524,11 @@ main { min-width: 0; }
     var span = Math.max(1, maxX - minX), R = Math.random, now0 = performance.now();
 
     // The outgoing word evaporates: its pixels go to the rising layer.
+    // Pile grid: a fixed 2.8pt on desktop (independent of window size, so columns always line up);
+    // on phones the menu is sized in px, so the grid follows it.
     var bsPx = bs / dpr, sStage = sc();
-    if (sStage > 0) BSU = bsPx / sStage;
+    var grid = stage.clientWidth <= 760 ? 2.8 / sStage : 2.8;
+    if (Math.abs(grid - BSU) > 1e-6) { BSU = grid; }
     rebuildDepth();
     parts = parts.filter(function (p) { return !(p.owner === a && p.launch > now0); });
     launch(from.map(function (c) {
@@ -578,6 +594,31 @@ main { min-width: 0; }
       var el = document.getElementById(l.getAttribute('data-jump'));
       if (el) el.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'start' });
     });
+  });
+
+  // ---- Front page: a random photo of a work on every page load ----
+  var SLIDES = [
+    ['hero', 'theorem-of-things-321'], ['cropcircle-baseball', 'cropcircle-united'], ['cropcircle-stack', 'cropcircle-united'],
+    ['cropcircle-mandarin', 'cropcircle-united'], ['tot355-room', 'theory-of-things-355'], ['tot356', 'theory-of-things-356'],
+    ['tot358', 'theory-of-things-358'], ['crunching-numbers', 'crunching-numbers'], ['tot304-shelf', 'theory-of-things-304'],
+    ['tot304-detail', 'theory-of-things-304'], ['roadside-detail', 'roadside-picnic'], ['tot325', 'theorem-of-things-325'],
+    ['despicable-me-2', 'despicable-me-2'], ['untitled-blue', 'untitled-canvas-75'], ['untitled-panel', 'untitled-fan']
+  ];
+  var heroLink = document.querySelector('.hero'), layers = heroLink.querySelectorAll('img'), front = 0, cur = 0, timer = 0;
+  function altFor(file) {
+    if (file === 'hero') return layers[0].getAttribute('data-alt') || layers[0].alt;
+    var m = document.querySelector('.work img[src="img/' + file + '.jpg"]');
+    return m ? m.alt : '';
+  }
+  layers[0].setAttribute('data-alt', layers[0].alt);
+  function pick() { var n; do { n = Math.floor(Math.random() * SLIDES.length); } while (n === cur && SLIDES.length > 1); return n; }
+  function setLayer(img, n) { img.src = 'img/' + SLIDES[n][0] + '.jpg'; img.alt = altFor(SLIDES[n][0]); img.removeAttribute('aria-hidden'); }
+  cur = pick(); setLayer(layers[0], cur); heroLink.setAttribute('data-work', SLIDES[cur][1]);
+  heroLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    var slug = heroLink.getAttribute('data-work');
+    location.hash = 'works'; show();
+    setTimeout(function () { var el = document.getElementById(slug); if (el) el.scrollIntoView({ block: 'start' }); }, 80);
   });
 
   var btn = document.getElementById('copy-email');
